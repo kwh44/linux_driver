@@ -12,7 +12,6 @@
 
 #include <linux/cdev.h>
 
-
 #include "gpio_write.h"
 
 MODULE_LICENSE("GPL");
@@ -27,30 +26,53 @@ static struct cdev c_dev;       /* global variable for the character device stru
 static struct class *cd_class;  /* global variable for the device class */
 
 
+static  int VALUE = 0;
+
 static int s7driver_open(struct inode *i, struct file *f) {
-    
     printk(KERN_DEBUG "[s7driver] - open() method called\n");
     return 0;
 }
 
 static int s7driver_release(struct inode *i, struct file *f) {
-
     printk(KERN_DEBUG "[s7driver] - close() method called\n");
     return 0;
 }
 
 // on read return current number on display
 static ssize_t s7driver_read(struct file *f, char __user *buf, size_t len, loff_t*off) {
-
+    char byte = VALUE + '0';
+    put_user(byte, buf);
     printk(KERN_DEBUG "[s7driver] - read() method called\n");
-    return 0;
+    return 1;
 }
 
 // on write set number on display
+
+
 static ssize_t s7driver_write(struct file *f, const char __user *buf, size_t len, loff_t *off) {
 
+    static int mapping[][] = {{0, 0, 0, 0, 0, 0, 0},
+                              {0, 0, 0, 0, 0, 0, 0},
+
+                              {0, 0, 0, 0, 0, 0, 0},
+                              {0, 0, 0, 0, 0, 0, 0},
+
+                              {0, 0, 0, 0, 0, 0, 0},
+                              {0, 0, 0, 0, 0, 0, 0},
+
+                              {0, 0, 0, 0, 0, 0, 0},
+                              {0, 0, 0, 0, 0, 0, 0},
+
+                              {0, 0, 0, 0, 0, 0, 0},
+                              {0, 0, 0, 0, 0, 0, 0}};
+    // read char from user space buffer
+    char kbuf;
+    if(raw_copy_from_user(&kbuf, buf, 1) != 0) return -EFAULT;
+    //
+    int value = kbuf - '0';
+    for (int i = 0; i < 7; ++i) write_to_pin(i, mapping[value][i]);
     printk(KERN_DEBUG "[s7driver] - write() method called\n");
-    return len;
+    return 1;
 }
 
 static struct file_operations s7driver_fops =
