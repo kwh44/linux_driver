@@ -1,1 +1,1 @@
-# linux_driver
+### 7 segment display controller driver that exposes its interface to /sys
