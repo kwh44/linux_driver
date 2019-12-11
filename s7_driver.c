@@ -33,7 +33,7 @@ static struct cdev c_dev;       /* global variable for the character device stru
 static struct class *cd_class;  /* global variable for the device class */
 
 
-static  int VALUE = 0;
+static int VALUE = 0;
 
 static int s7driver_open(struct inode *i, struct file *f) {
     printk(KERN_DEBUG "[s7driver] - open() method called\n");
@@ -58,7 +58,7 @@ static ssize_t s7driver_read(struct file *f, char __user *buf, size_t len, loff_
 
 static ssize_t s7driver_write(struct file *f, const char __user *buf, size_t len, loff_t *off) {
 
-    static int mapping[][10] = {{0, 0, 0, 0, 0, 0, 0},
+    static int mapping[][7] = {{0, 0, 0, 0, 0, 0, 0},
                               {1, 0, 1, 0, 1, 0, 1},
 
                               {0, 0, 0, 0, 0, 0, 0},
@@ -76,10 +76,9 @@ static ssize_t s7driver_write(struct file *f, const char __user *buf, size_t len
     char kbuf;
     if(raw_copy_from_user(&kbuf, buf, 1) != 0) return -EFAULT;
     //
-    int value;
-    value =  kbuf - '0';
+    VALUE =  kbuf - '0';
     int i;
-    for (i = 0; i < 7; ++i) write_to_pin(i, mapping[value][i]);
+    for (i = 0; i < 7; ++i) write_to_pin(i, mapping[VALUE][i]);
     printk(KERN_DEBUG "[s7driver] - write() method called\n");
     return 1;
 }
