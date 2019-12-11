@@ -58,25 +58,26 @@ static ssize_t s7driver_read(struct file *f, char __user *buf, size_t len, loff_
 
 static ssize_t s7driver_write(struct file *f, const char __user *buf, size_t len, loff_t *off) {
 
-    static int mapping[][7] = {{0, 0, 0, 0, 0, 0, 0},
-                              {1, 0, 1, 0, 1, 0, 1},
+			     // a, b, c, d, e, f, g
+    static int mapping[][7] = {{1, 1, 1, 1, 1, 1, 0},
+                              {0, 1, 1, 0, 0, 0, 0},
 
-                              {0, 0, 0, 0, 0, 0, 0},
-                              {0, 0, 0, 0, 0, 0, 0},
+                              {1, 1, 0, 1, 1, 0, 1},
+                              {1, 1, 1, 1, 0, 0, 1},
 
-                              {0, 0, 0, 0, 0, 0, 0},
-                              {0, 0, 0, 0, 0, 0, 0},
+                              {0, 1, 1, 0, 0, 1, 1},
+                              {1, 0, 1, 1, 0, 1, 1},
 
-                              {0, 0, 0, 0, 0, 0, 0},
-                              {0, 0, 0, 0, 0, 0, 0},
+                              {1, 0, 1, 1, 1, 1, 1},
+                              {1, 1, 1,0 , 0, 0, 0},
 
-                              {0, 0, 0, 0, 0, 0, 0},
-                              {0, 0, 0, 0, 0, 0, 0}};
+                              {1, 1, 1, 1, 1, 1, 1},
+                              {1, 1, 1, 1, 0, 1, 1}};
     // read char from user space buffer
-    char kbuf;
-    if(raw_copy_from_user(&kbuf, buf, 1) != 0) return -EFAULT;
+    char kbuf[34];
+    if(raw_copy_from_user(kbuf, buf, len) != 0) return -EFAULT;
     //
-    VALUE =  kbuf - '0';
+    VALUE = kbuf[0] - '0';
     int i;
     for (i = 0; i < 7; ++i) write_to_pin(i, mapping[VALUE][i]);
     printk(KERN_DEBUG "[s7driver] - write() method called\n");
