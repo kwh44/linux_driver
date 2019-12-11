@@ -14,6 +14,13 @@
 
 #include "gpio_write.h"
 
+#include <linux/module.h>
+#include <linux/init.h>
+#include <linux/types.h>
+#include <linux/cdev.h>
+#include <linux/uaccess.h>
+#include <linux/gpio.h>
+
 MODULE_LICENSE("GPL");
 
 #define DEVICE_NAME "s7driver"
@@ -51,8 +58,8 @@ static ssize_t s7driver_read(struct file *f, char __user *buf, size_t len, loff_
 
 static ssize_t s7driver_write(struct file *f, const char __user *buf, size_t len, loff_t *off) {
 
-    static int mapping[][] = {{0, 0, 0, 0, 0, 0, 0},
-                              {0, 0, 0, 0, 0, 0, 0},
+    static int mapping[][10] = {{0, 0, 0, 0, 0, 0, 0},
+                              {1, 0, 1, 0, 1, 0, 1},
 
                               {0, 0, 0, 0, 0, 0, 0},
                               {0, 0, 0, 0, 0, 0, 0},
@@ -69,8 +76,10 @@ static ssize_t s7driver_write(struct file *f, const char __user *buf, size_t len
     char kbuf;
     if(raw_copy_from_user(&kbuf, buf, 1) != 0) return -EFAULT;
     //
-    int value = kbuf - '0';
-    for (int i = 0; i < 7; ++i) write_to_pin(i, mapping[value][i]);
+    int value;
+    value =  kbuf - '0';
+    int i;
+    for (i = 0; i < 7; ++i) write_to_pin(i, mapping[value][i]);
     printk(KERN_DEBUG "[s7driver] - write() method called\n");
     return 1;
 }
@@ -83,6 +92,8 @@ static struct file_operations s7driver_fops =
                 .read = s7driver_read,
                 .write = s7driver_write
         };
+
+
 
 static int __init s7driver_init(void) {
     int ret;
@@ -107,7 +118,7 @@ static int __init s7driver_init(void) {
     }
 
     /* init cdev sctructure */
-    cdev_init(&c_dev,  s7driver_fops);
+    cdev_init(&c_dev, &s7driver_fops);
     /* tell the kernel */
     if ((ret = cdev_add(&c_dev, first, 1)) < 0) {
         device_destroy(cd_class, first);
@@ -128,5 +139,5 @@ static void __exit s7driver_exit(void) {
     printk(KERN_INFO "[s7driver] - unregistered from kernel");
 }
 
-module_init s7driver_init);
-module_exit s7driver_exit);
+module_init(s7driver_init);
+module_exit(s7driver_exit);

@@ -1,7 +1,7 @@
 CROSS := 1
 
 PWD = $(shell pwd)
-TARGET1 = gpio_write.c
+TARGET1 = gpio_write
 TARGET2 = s7_driver
 
 ifneq ($(CROSS), 1)

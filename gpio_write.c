@@ -25,7 +25,8 @@ void write_to_pin(int pin, int value) {
 static int __init
 
 md_init(void) {
-    for (int i = 0; i < 7; ++i) gpio_direction_output(pins[i], 0);
+    int i = 0;
+    for (; i < 7; ++i) gpio_direction_output(pins[i], 0);
     printk("gpio_write module loaded!\n");
     return 0;
 }
